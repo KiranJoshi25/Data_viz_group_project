@@ -1,4 +1,4 @@
-Catalog Number,Calendar Date,Eclipse Time,Delta T (s),Lunation Number,Saros Number,Eclipse Type,Gamma,Eclipse_Magnitude,Latitude,Longitude,Sun Altitude,Sun Azimuth,Path Width (km),Central Duration
+Catalog Number,Calendar Date,Eclipse Time,Delta T (s),Lunation Number,Saros_Number,Eclipse_Type,Gamma,Eclipse_Magnitude,Latitude,Longitude,Sun_Altitude,Sun Azimuth,Path Width (km),Central Duration
 1,-1999 June 12,03:14:51,46438,-49456,5,T,-0.2701,1.0733,6.0N,33.3W,74,344,247,06m37s
 2,-1999 December 5,23:45:23,46426,-49450,10,A,-0.2317,0.9382,32.9S,10.8E,76,21,236,06m44s
 3,-1998 June 1,18:09:16,46415,-49444,15,T,0.4994,1.0284,46.2N,83.4E,60,151,111,02m15s
