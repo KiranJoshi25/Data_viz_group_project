@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Bar chart Visualization Of Solar Eclipse</title>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <style>
+        body {
+            font: 10px sans-serif;
+            background-color: #edf7fa;
+
+        }
+        select {
+            display: block;
+        }
+        .bar {
+            fill: #a27ca2;
+            opacity: 0.8;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+    </style>
+
+</head>
+<body>
+<p style="font-size: 15px" align="right">Solar azimuth angle is defined as the angle between the projection of sun's centre onto the horizontal plane and due south direction</p>
+<img src="1.jpg"  alt="Azimuth" align="right" width="850" height="350">
+<h1> Bar chart Visualization Of Solar Eclipse parameters</h1>
+<div id='vis-container'> <h4>Select a Eclipse from Dropdown</h4></div>
+<script type="text/javascript">
+    // Load and munge data, then make the visualization.
+    var fileName = "https://raw.githubusercontent.com/KiranJoshi25/Data_viz_group_project/main/solar.csv";
+    var Csv_Fields = ["Saros_Number","Sun_Altitude","Path_Width","Sun_Azimuth"];
+
+    d3.csv(fileName, function(error, data) {
+        var Eclipse_map = {};
+        data.forEach(function(d) {
+            var solar = d.Calendar_Date;
+            Eclipse_map[solar] = [];
+
+            // { cerealName: [ bar1Val, bar2Val, ... ] }
+            Csv_Fields.forEach(function(field) {
+                Eclipse_map[solar].push( +d[field] );
+            });
+        });
+        makeVis(Eclipse_map);
+    });
+
+    var makeVis = function(Eclipse_map) {
+        // Define dimensions of vis
+        var margin = { top: 30, right: 50, bottom: 30, left: 50 },
+            width  = 550 - margin.left - margin.right,
+            height = 450 - margin.top  - margin.bottom;
+
+        // Make x scale
+        var xScale = d3.scale.ordinal()
+            .domain(Csv_Fields)
+            .rangeRoundBands([0, width], 0.1);
+
+        // Make y scale, the domain will be defined on bar update
+        var yScale = d3.scale.linear()
+            .range([height, 0]);
+
+        // Create canvas
+        var canvas = d3.select("#vis-container")
+            .append("svg")
+            .attr("width",  width  + margin.left + margin.right)
+            .attr("height", height + margin.top  + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        // Make x-axis and add to canvas
+        var xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom");
+
+        canvas.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+
+        // Make y-axis and add to canvas
+        var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left");
+
+        var Y_axis_update = canvas.append("g")
+            .attr("class", "y axis")
+            .call(yAxis);
+
+        Y_axis_update.append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text("Value");
+
+        var updateBars = function(data) {
+            // First update the y-axis domain to match data
+            yScale.domain( d3.extent(data) );
+            Y_axis_update.call(yAxis);
+
+            var bars = canvas.selectAll(".bar").data(data);
+
+            // Add bars for new data
+            bars.enter()
+                .append("rect")
+                .attr("class", "bar")
+                .attr("x", function(d,i) { return xScale( Csv_Fields[i] ); })
+                .attr("width", xScale.rangeBand())
+                .attr("y", function(d,i) { return yScale(d); })
+                .attr("height", function(d,i) { return height - yScale(d); });
+
+            // Update old ones, already have x / width from before
+            bars
+                .transition().duration(250)
+                .attr("y", function(d,i) { return yScale(d); })
+                .attr("height", function(d,i) { return height - yScale(d); });
+
+            // Remove old ones
+            bars.exit().remove();
+        };
+
+        // Handler for dropdown value change
+        var dropdownChange = function() {
+            var New_Eclipse = d3.select(this).property('value'),
+                newData   = Eclipse_map[New_Eclipse];
+
+            updateBars(newData);
+        };
+
+        // Get names of cereals, for dropdown
+        var cereals = Object.keys(Eclipse_map).sort();
+
+        var dropdown = d3.select("#vis-container")
+            .insert("select", "svg")
+            .on("change", dropdownChange);
+
+        dropdown.selectAll("option")
+            .data(cereals)
+            .enter().append("option")
+            .attr("value", function (d) { return d; })
+            .text(function (d) {
+                return d[0].toUpperCase() + d.slice(1,d.length); // capitalize 1st letter
+            });
+
+        var initialData = Eclipse_map[ cereals[0] ];
+        updateBars(initialData);
+
+    };
+</script>
+<h3>To know more about saros number <a href="https://eclipse.gsfc.nasa.gov/SEsaros/SEsaros.html"> click here</a></h3>
+</body>
+</html>
